@@ -35,6 +35,10 @@ class RiskLevel:
     CRITICAL = "critical"
 
 
+# Default severity when vulnerabilities are found but severity cannot be determined
+DEFAULT_VULNERABILITY_SEVERITY = "medium"
+
+
 def parse_version(version_string: str) -> Tuple[int, int, int]:
     """Parse a semantic version string into major, minor, patch components.
 
@@ -192,10 +196,14 @@ def run_pip_audit(requirements_file: str = "requirements.txt") -> Dict:
         if proc.returncode in [0, 1]:  # 0=no vulns, 1=vulns found
             audit_data = json.loads(proc.stdout)
             result["success"] = True
-            # Safely extract vulnerabilities, handling different pip-audit output formats
+            # Extract vulnerabilities from pip-audit JSON output
+            # pip-audit JSON format (as of v2.x) uses "dependencies" key for vulnerable packages
+            # Each dependency contains package info and a "vulns" list with vulnerability details
+            # Example: {"dependencies": [{"name": "pkg", "version": "1.0", "vulns": [...]}]}
             if isinstance(audit_data, dict):
                 result["vulnerabilities"] = audit_data.get("dependencies", [])
             else:
+                # Fallback for unexpected format
                 result["vulnerabilities"] = []
         else:
             result["error"] = f"pip-audit failed: {proc.stderr}"
@@ -236,8 +244,8 @@ def extract_vulnerability_severity(vulnerabilities: List[Dict]) -> Optional[str]
                 severity = v["severity"].lower()
             # Try to infer from CVSS score if available
             elif "fix_versions" in v or "aliases" in v:
-                # Default to medium if we can't determine
-                severity = "medium"
+                # Use default severity if we can't determine from available data
+                severity = DEFAULT_VULNERABILITY_SEVERITY
 
             if severity and severity in severity_levels:
                 level = severity_levels[severity]
@@ -245,9 +253,9 @@ def extract_vulnerability_severity(vulnerabilities: List[Dict]) -> Optional[str]
                     max_level = level
                     max_severity = severity
 
-    # If we found vulnerabilities but couldn't determine severity, default to medium
+    # If we found vulnerabilities but couldn't determine severity, use default
     if not max_severity and vulnerabilities:
-        max_severity = "medium"
+        max_severity = DEFAULT_VULNERABILITY_SEVERITY
 
     return max_severity
 
