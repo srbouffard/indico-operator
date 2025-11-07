@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Dependency validation helper script for GitHub Copilot Agent.
 
 This script provides utility functions for validating dependency updates,
@@ -188,7 +192,11 @@ def run_pip_audit(requirements_file: str = "requirements.txt") -> Dict:
         if proc.returncode in [0, 1]:  # 0=no vulns, 1=vulns found
             audit_data = json.loads(proc.stdout)
             result["success"] = True
-            result["vulnerabilities"] = audit_data.get("dependencies", [])
+            # Safely extract vulnerabilities, handling different pip-audit output formats
+            if isinstance(audit_data, dict):
+                result["vulnerabilities"] = audit_data.get("dependencies", [])
+            else:
+                result["vulnerabilities"] = []
         else:
             result["error"] = f"pip-audit failed: {proc.stderr}"
 
@@ -198,6 +206,50 @@ def run_pip_audit(requirements_file: str = "requirements.txt") -> Dict:
         result["error"] = f"Unexpected error running pip-audit: {e}"
 
     return result
+
+
+def extract_vulnerability_severity(vulnerabilities: List[Dict]) -> Optional[str]:
+    """Extract the highest severity level from vulnerability data.
+
+    Args:
+        vulnerabilities: List of vulnerability dicts from pip-audit
+
+    Returns:
+        Highest severity level found: critical, high, medium, low, or None
+    """
+    if not vulnerabilities:
+        return None
+
+    severity_levels = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+    max_severity = None
+    max_level = 0
+
+    for vuln in vulnerabilities:
+        # pip-audit may include vulnerabilities within dependency dict
+        vuln_list = vuln.get("vulns", [])
+        for v in vuln_list:
+            # Try to extract severity from various possible fields
+            severity = None
+
+            # Check for explicit severity field
+            if "severity" in v:
+                severity = v["severity"].lower()
+            # Try to infer from CVSS score if available
+            elif "fix_versions" in v or "aliases" in v:
+                # Default to medium if we can't determine
+                severity = "medium"
+
+            if severity and severity in severity_levels:
+                level = severity_levels[severity]
+                if level > max_level:
+                    max_level = level
+                    max_severity = severity
+
+    # If we found vulnerabilities but couldn't determine severity, default to medium
+    if not max_severity and vulnerabilities:
+        max_severity = "medium"
+
+    return max_severity
 
 
 def calculate_final_risk(
@@ -385,11 +437,12 @@ def main():
     has_vulns = len(security_results.get("vulnerabilities", [])) > 0
     ci_failed = args.ci_status == "failure"
 
-    # Determine vulnerability severity
+    # Determine vulnerability severity from scan results
     vuln_severity = None
     if has_vulns:
-        # This would need actual severity data from pip-audit
-        vuln_severity = "medium"  # Default
+        vuln_severity = extract_vulnerability_severity(
+            security_results.get("vulnerabilities", [])
+        )
 
     final_risk = calculate_final_risk(
         initial_risk,

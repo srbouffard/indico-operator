@@ -1,3 +1,6 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Tests for the dependency validation script."""
 
 import json
@@ -14,6 +17,7 @@ from validate_dependency import (
     VersionBump,
     calculate_final_risk,
     classify_version_bump,
+    extract_vulnerability_severity,
     generate_assessment_report,
     get_initial_risk_level,
     parse_pr_title,
@@ -116,6 +120,43 @@ class TestRiskCalculation:
         """Test initial risk for major bump is high."""
         risk = get_initial_risk_level(VersionBump.MAJOR)
         assert risk == RiskLevel.HIGH
+
+    def test_extract_severity_none(self):
+        """Test severity extraction with no vulnerabilities."""
+        severity = extract_vulnerability_severity([])
+        assert severity is None
+
+    def test_extract_severity_with_vulns(self):
+        """Test severity extraction with vulnerabilities."""
+        vulns = [
+            {
+                "name": "test-package",
+                "vulns": [
+                    {"severity": "high", "id": "CVE-2024-0001"},
+                ],
+            }
+        ]
+        severity = extract_vulnerability_severity(vulns)
+        assert severity == "high"
+
+    def test_extract_severity_multiple_vulns(self):
+        """Test severity extraction returns highest severity."""
+        vulns = [
+            {
+                "name": "package1",
+                "vulns": [
+                    {"severity": "medium", "id": "CVE-2024-0001"},
+                ],
+            },
+            {
+                "name": "package2",
+                "vulns": [
+                    {"severity": "critical", "id": "CVE-2024-0002"},
+                ],
+            },
+        ]
+        severity = extract_vulnerability_severity(vulns)
+        assert severity == "critical"
 
     def test_final_risk_no_issues(self):
         """Test final risk with no vulnerabilities or CI failures."""
