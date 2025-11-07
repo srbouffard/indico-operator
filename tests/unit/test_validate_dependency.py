@@ -1,13 +1,19 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Tests for the dependency validation script."""
+"""Tests for the dependency validation script.
+
+Note: This test file uses direct path manipulation to import the validation script
+since it's located in .github/scripts rather than the main source tree. This is
+intentional as the script is tooling, not part of the charm code.
+"""
 
 import json
 import sys
 from pathlib import Path
 
 # Add the scripts directory to the path
+# This is acceptable here as the validation script is tooling, not charm code
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / ".github" / "scripts"))
 
 import pytest

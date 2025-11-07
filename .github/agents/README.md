@@ -101,9 +101,9 @@ python3 .github/scripts/validate_dependency.py \
 
 ### Rollback Plan
 If issues occur after merge:
-\```bash
+```bash
 git revert <commit-sha>
-\```
+```
 ```
 
 ## Testing

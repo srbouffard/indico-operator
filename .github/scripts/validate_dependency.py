@@ -146,6 +146,8 @@ def get_initial_risk_level(bump_type: str) -> str:
     elif bump_type == VersionBump.MAJOR:
         return RiskLevel.HIGH
     else:
+        # Default to MEDIUM for unknown bump types as a balanced approach
+        # Not too permissive (LOW) but allows for manual review (not HIGH/CRITICAL)
         return RiskLevel.MEDIUM
 
 
@@ -239,12 +241,14 @@ def extract_vulnerability_severity(vulnerabilities: List[Dict]) -> Optional[str]
             # Try to extract severity from various possible fields
             severity = None
 
-            # Check for explicit severity field
+            # Check for explicit severity field (preferred method)
             if "severity" in v:
                 severity = v["severity"].lower()
-            # Try to infer from CVSS score if available
+            # If severity not explicitly provided, vulnerabilities with CVE aliases
+            # or fix information still indicate a known issue worth flagging
             elif "fix_versions" in v or "aliases" in v:
-                # Use default severity if we can't determine from available data
+                # These fields indicate a documented vulnerability
+                # Use default severity as a conservative estimate
                 severity = DEFAULT_VULNERABILITY_SEVERITY
 
             if severity and severity in severity_levels:
@@ -300,12 +304,15 @@ def calculate_final_risk(
     if ci_failed:
         current_score = max(current_score, 3)  # At least High
 
-    # Convert score back to risk level
-    for level, score in risk_score.items():
-        if score == current_score:
-            return level
+    # Convert score back to risk level with explicit mapping for consistency
+    score_to_level = {
+        1: RiskLevel.LOW,
+        2: RiskLevel.MEDIUM,
+        3: RiskLevel.HIGH,
+        4: RiskLevel.CRITICAL,
+    }
 
-    return RiskLevel.MEDIUM
+    return score_to_level.get(current_score, RiskLevel.MEDIUM)
 
 
 def generate_assessment_report(
