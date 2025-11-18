@@ -2,7 +2,8 @@
 
 ## Overview
 
-Juju Kubernetes Charm for Indico (event management). Python-based using Ops framework. ~1,400 LOC source, ~2,400 LOC tests. Main: `src/charm.py` (987 lines), `src/state.py` (238 lines), observers for DB/S3/SAML/SMTP.
+Juju Kubernetes Charm for Indico (event management). Python-based using Ops framework.
+Main: `src/charm.py`, `src/state.py`, observers for DB/S3/SAML/SMTP.
 
 ## Build and Test (CRITICAL)
 
@@ -26,7 +27,7 @@ tox -e static   # Bandit security scan (4-5s)
 
 **Root config**: `metadata.yaml` (relations), `config.yaml` (options), `actions.yaml`, `charmcraft.yaml`, `pyproject.toml` (linting), `tox.ini`, `requirements.txt`
 
-**src/**: `charm.py` (main, 987L), `state.py` (config, 238L), `*_observer.py` (DB/S3/SAML/SMTP relations), `grafana_dashboards/`, `prometheus_alert_rules/`
+**src/**: `charm.py` (main), `state.py` (config), `*_observer.py` (DB/S3/SAML/SMTP relations), `grafana_dashboards/`, `prometheus_alert_rules/`
 
 **tests/**: `unit/` (new), `unit_harness/` (legacy Harness, keep), `integration/` (CI only), `zap/` (security)
 
@@ -34,7 +35,7 @@ tox -e static   # Bandit security scan (4-5s)
 
 **Docs**: `docs/` (index, tutorial, how-to, reference, explanation, release-notes)
 
-**Other**: `terraform/` (deployment), `load_tests/`, `lib/charms/` (vendored charm libraries)
+**Other**: `terraform/` (deployment), `load_tests/`, `lib/charms/` (vendored)
 
 ## CI Workflows (PR triggers)
 
@@ -93,4 +94,5 @@ Artifacts: `docs/release-notes/artifacts/` | Output: `docs/release-notes/release
 7. **Respect the observer pattern** - relations are managed by dedicated observer modules
 8. **Follow the Juju charm lifecycle** - install, config-changed, relation events, upgrade
 9. **NEVER commit secrets or credentials** - use Juju secrets for sensitive data
-10. **Trust these instructions first** - only search if information is incomplete or appears incorrect
+10. **Change Artifact Requirement** - A change artifact located in `docs/release-notes/artifacts/pr<PR_NUMBER>.yaml` is **required** for any PR that introduces change. See `release-notes.instructions.md`.
+11. **Trust these instructions first** - only search if information is incomplete or appears incorrect
