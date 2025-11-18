@@ -44,7 +44,7 @@ class ApplicationCharm(CharmBase):
         super().__init__(*args)
 
         # Charm events defined in the database requires charm library.
-        self.database = DatabaseRequires(self, relation_name="database", database_name="database")
+        self.database = DatabaseRequires(self, relation_name="database", database_name="database", cridentials_prefix="app")
         self.framework.observe(self.database.on.database_created, self._on_database_created)
         self.framework.observe(self.database.on.database_entity_created, self._on_database_entity_created)
 
@@ -119,6 +119,7 @@ class ApplicationCharm(CharmBase):
             relation_name="database",
             database_name="database",
             relations_aliases = ["cluster1", "cluster2"],
+            cridentials_prefix="app",
         )
         self.framework.observe(
             self.database.on.cluster1_database_created, self._on_cluster1_database_created
@@ -3947,7 +3948,7 @@ class DatabaseRequirerEventHandlers(RequirerEventHandlers):
                 return
 
 
-class DatabaseRequires(DatabaseRequirerData, DatabaseRequirerEventHandlers):
+class DatabaseRequires(DatabaseRequirerData, DatabaseRequirerEventHandlers, DatabaseCredentialsPrefix):
     """Provider-side of the database relations."""
 
     def __init__(
