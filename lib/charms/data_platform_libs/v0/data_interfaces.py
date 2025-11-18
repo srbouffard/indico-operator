@@ -44,7 +44,8 @@ class ApplicationCharm(CharmBase):
         super().__init__(*args)
 
         # Charm events defined in the database requires charm library.
-        self.database = DatabaseRequires(self, relation_name="database", database_name="database", cridentials_prefix="app")
+        # WARNING, credentials_prefix is now required to avoid conflicts when multiple databases.
+        self.database = DatabaseRequires(self, relation_name="database", database_name="database", credentials_prefix)
         self.framework.observe(self.database.on.database_created, self._on_database_created)
         self.framework.observe(self.database.on.database_entity_created, self._on_database_entity_created)
 
@@ -119,7 +120,7 @@ class ApplicationCharm(CharmBase):
             relation_name="database",
             database_name="database",
             relations_aliases = ["cluster1", "cluster2"],
-            cridentials_prefix="app",
+            credentials_prefix,
         )
         self.framework.observe(
             self.database.on.cluster1_database_created, self._on_cluster1_database_created
@@ -3948,7 +3949,7 @@ class DatabaseRequirerEventHandlers(RequirerEventHandlers):
                 return
 
 
-class DatabaseRequires(DatabaseRequirerData, DatabaseRequirerEventHandlers, DatabaseCredentialsPrefix):
+class DatabaseRequires(DatabaseRequirerData, DatabaseRequirerEventHandlers):
     """Provider-side of the database relations."""
 
     def __init__(
@@ -3956,6 +3957,7 @@ class DatabaseRequires(DatabaseRequirerData, DatabaseRequirerEventHandlers, Data
         charm: CharmBase,
         relation_name: str,
         database_name: str,
+        credentials_prefix: str,
         extra_user_roles: Optional[str] = None,
         relations_aliases: Optional[List[str]] = None,
         additional_secret_fields: Optional[List[str]] = [],
@@ -3972,6 +3974,7 @@ class DatabaseRequires(DatabaseRequirerData, DatabaseRequirerEventHandlers, Data
             self,
             charm.model,
             relation_name,
+            credentials_prefix,
             database_name,
             extra_user_roles,
             relations_aliases,
