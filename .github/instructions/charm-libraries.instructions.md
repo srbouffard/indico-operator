@@ -57,7 +57,7 @@ Files in `lib/charms/` are **vendored external dependencies** that are auto-upda
 
 ## Review Template
 
-When reviewing a charm library PR, structure your feedback as:
+When reviewing a charm library PR, structure your feedback to follow **exactly** this template:
 
 ```markdown
 ## Charm Library Update Impact Analysis
