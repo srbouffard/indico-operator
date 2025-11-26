@@ -1,4 +1,3 @@
-
 ---
 description: 'Guidelines for creating release notes artifacts in the Indico Operator repository'
 applyTo: 'docs/release-notes/**/*.yaml'

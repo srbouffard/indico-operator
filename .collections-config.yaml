@@ -1,5 +1,4 @@
-copilot:  
-  version: "v0.1.1"  
-    
+copilot:
+  version: "v0.1.2"
   collections:
     - pfe-charms

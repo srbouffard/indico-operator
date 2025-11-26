@@ -1,4 +1,3 @@
-
 ---
 description: 'Guidelines for reviewing charm library updates in lib/charms/ directory'
 applyTo: 'lib/charms/**/*.py'
