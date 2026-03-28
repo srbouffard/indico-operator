@@ -1,0 +1,27 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-015ee-microk8s  microk8s/localhost  2.9.56   unsupported  15:43:14Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.8    active      1  indico                                   0  10.152.183.49   no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.254  no       
+postgresql-k8s            14.22    active      1  postgresql-k8s            14/edge      824  10.152.183.237  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.170  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.236  no       
+
+Unit                         Workload  Agent  Address      Ports  Message
+indico/0*                    active    idle   10.1.233.15         
+nginx-ingress-integrator/0*  active    idle   10.1.233.13         
+postgresql-k8s/0*            active    idle   10.1.233.20         Primary
+redis-broker/0*              active    idle   10.1.233.16         
+redis-cache/0*               active    idle   10.1.233.19         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-redis-broker-0: 15:41:11 ERROR unit.redis-broker/0.juju-log redis-peers:2: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-broker-0: 15:41:11 ERROR unit.redis-broker/0.juju-log redis-peers:2: Unit redis-broker/0 doesn't agree on tracked master
+unit-redis-broker-0: 15:41:12 ERROR unit.redis-broker/0.juju-log redis-peers:2: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
